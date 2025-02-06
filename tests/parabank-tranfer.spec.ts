@@ -12,7 +12,57 @@ async function openNewAccount(page: Page) {
   await expect(page.getByText('Account Opened!')).toBeVisible();
 };
 
-test('should register an user', async ({ page }) => {
+async function userLogin(page: Page, username: string, password: string) {
+  await page.goto('https://parabank.parasoft.com/parabank/index.htm');
+
+  await page.locator('input[name="username"]').click();
+  await page.locator('input[name="username"]').fill(username);
+  await page.locator('input[name="username"]').press('Tab');
+  await page.locator('input[name="password"]').fill(password);
+  await page.getByRole('button', { name: 'Log In' }).click();
+  await expect(page.getByText('Account Services')).toBeVisible();
+};
+
+async function registerBaseUser(page: Page, username: string, password: string) {
+  await page.goto('https://parabank.parasoft.com/parabank/index.htm');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  await page.locator('[id="customer\\.firstName"]').click();
+  await page.locator('[id="customer\\.firstName"]').fill('First Name');
+
+  await page.locator('[id="customer\\.lastName"]').click();
+  await page.locator('[id="customer\\.lastName"]').fill('Last Name');
+
+  await page.locator('[id="customer\\.address\\.street"]').click();
+  await page.locator('[id="customer\\.address\\.street"]').fill('Pantanal');
+
+  await page.locator('[id="customer\\.address\\.city"]').click();
+  await page.locator('[id="customer\\.address\\.city"]').fill('Florianopolis');
+
+  await page.locator('[id="customer\\.address\\.state"]').click();
+  await page.locator('[id="customer\\.address\\.state"]').fill('Santa Catarina');
+
+  await page.locator('[id="customer\\.address\\.zipCode"]').click();
+  await page.locator('[id="customer\\.address\\.zipCode"]').fill('88888888');
+
+  await page.locator('[id="customer\\.phoneNumber"]').click();
+  await page.locator('[id="customer\\.phoneNumber"]').fill('5548999999999');
+
+  await page.locator('[id="customer\\.ssn"]').click();
+  await page.locator('[id="customer\\.ssn"]').fill('12345678910');
+
+  await page.locator('[id="customer\\.username"]').click();
+  await page.locator('[id="customer\\.username"]').fill(username);
+
+  await page.locator('[id="customer\\.password"]').click();
+  await page.locator('[id="customer\\.password"]').fill(password);
+  await page.locator('#repeatedPassword').click();
+  await page.locator('#repeatedPassword').fill(password);
+
+  await page.getByRole('button', { name: 'Register' }).click();
+}
+
+test('should register a random user', async ({ page }) => {
   const username = Math.random().toString();
   const password = Math.random().toString();
 
@@ -56,20 +106,10 @@ test('should register an user', async ({ page }) => {
   await expect(page.locator('h1')).toContainText(`Welcome ${username}`);
 });
 
-async function userLogin(page: Page, username: string, password: string) {
-  await page.goto('https://parabank.parasoft.com/parabank/index.htm');
-
-  await page.locator('input[name="username"]').click();
-  await page.locator('input[name="username"]').fill(username);
-  await page.locator('input[name="username"]').press('Tab');
-  await page.locator('input[name="password"]').fill(password);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await expect(page.getByText('Account Services')).toBeVisible();
-};
-
 test.describe('parabank transfer', () => {
   test.beforeEach(async ({ page }) => {
-    userLogin(page, "ericuser", "ericpass");
+    await registerBaseUser(page, "ericuser", "ericpass");
+    await userLogin(page, "ericuser", "ericpass");
   });
 
   test('should open new account', async ({ page }) => {
